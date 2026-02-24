@@ -1,0 +1,15 @@
+G:\Artem\TSU\Object-oriented-analysis-and-design-2\lab01\woPattern\bin\Debug\net10.0\woPattern.exe
+G:\Artem\TSU\Object-oriented-analysis-and-design-2\lab01\woPattern\bin\Debug\net10.0\woPattern.deps.json
+G:\Artem\TSU\Object-oriented-analysis-and-design-2\lab01\woPattern\bin\Debug\net10.0\woPattern.runtimeconfig.json
+G:\Artem\TSU\Object-oriented-analysis-and-design-2\lab01\woPattern\bin\Debug\net10.0\woPattern.dll
+G:\Artem\TSU\Object-oriented-analysis-and-design-2\lab01\woPattern\bin\Debug\net10.0\woPattern.pdb
+G:\Artem\TSU\Object-oriented-analysis-and-design-2\lab01\woPattern\obj\Debug\net10.0\woPattern.GeneratedMSBuildEditorConfig.editorconfig
+G:\Artem\TSU\Object-oriented-analysis-and-design-2\lab01\woPattern\obj\Debug\net10.0\woPattern.AssemblyInfoInputs.cache
+G:\Artem\TSU\Object-oriented-analysis-and-design-2\lab01\woPattern\obj\Debug\net10.0\woPattern.AssemblyInfo.cs
+G:\Artem\TSU\Object-oriented-analysis-and-design-2\lab01\woPattern\obj\Debug\net10.0\woPattern.csproj.CoreCompileInputs.cache
+G:\Artem\TSU\Object-oriented-analysis-and-design-2\lab01\woPattern\obj\Debug\net10.0\woPattern.sourcelink.json
+G:\Artem\TSU\Object-oriented-analysis-and-design-2\lab01\woPattern\obj\Debug\net10.0\woPattern.dll
+G:\Artem\TSU\Object-oriented-analysis-and-design-2\lab01\woPattern\obj\Debug\net10.0\refint\woPattern.dll
+G:\Artem\TSU\Object-oriented-analysis-and-design-2\lab01\woPattern\obj\Debug\net10.0\woPattern.pdb
+G:\Artem\TSU\Object-oriented-analysis-and-design-2\lab01\woPattern\obj\Debug\net10.0\woPattern.genruntimeconfig.cache
+G:\Artem\TSU\Object-oriented-analysis-and-design-2\lab01\woPattern\obj\Debug\net10.0\ref\woPattern.dll
