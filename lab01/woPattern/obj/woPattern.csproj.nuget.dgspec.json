@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "G:\\Artem\\TSU\\Object-oriented-analysis-and-design-2\\lab01\\woPattern\\woPattern.csproj": {}
+    "/Users/artemmalyutin/TSU/Object-oriented-analysis-and-design-2/lab01/woPattern/woPattern.csproj": {}
   },
   "projects": {
-    "G:\\Artem\\TSU\\Object-oriented-analysis-and-design-2\\lab01\\woPattern\\woPattern.csproj": {
+    "/Users/artemmalyutin/TSU/Object-oriented-analysis-and-design-2/lab01/woPattern/woPattern.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "G:\\Artem\\TSU\\Object-oriented-analysis-and-design-2\\lab01\\woPattern\\woPattern.csproj",
+        "projectUniqueName": "/Users/artemmalyutin/TSU/Object-oriented-analysis-and-design-2/lab01/woPattern/woPattern.csproj",
         "projectName": "woPattern",
-        "projectPath": "G:\\Artem\\TSU\\Object-oriented-analysis-and-design-2\\lab01\\woPattern\\woPattern.csproj",
-        "packagesPath": "C:\\Users\\a2005\\.nuget\\packages\\",
-        "outputPath": "G:\\Artem\\TSU\\Object-oriented-analysis-and-design-2\\lab01\\woPattern\\obj\\",
+        "projectPath": "/Users/artemmalyutin/TSU/Object-oriented-analysis-and-design-2/lab01/woPattern/woPattern.csproj",
+        "packagesPath": "/Users/artemmalyutin/.nuget/packages/",
+        "outputPath": "/Users/artemmalyutin/TSU/Object-oriented-analysis-and-design-2/lab01/woPattern/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\a2005\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "/Users/artemmalyutin/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
@@ -59,7 +59,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.103/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/10.0.103/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",

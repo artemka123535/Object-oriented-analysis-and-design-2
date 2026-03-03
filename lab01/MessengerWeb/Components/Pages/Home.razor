@@ -1,0 +1,128 @@
+﻿@page "/"
+@using MessengerWeb.Models
+@using Microsoft.AspNetCore.Components.Forms
+@using System.IO
+@inject IWebHostEnvironment Env
+@inject ChatService Chat
+@rendermode InteractiveServer
+
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">Aura</h4>
+        </div>
+        
+        <div class="card-body" style="height: 450px; overflow-y: auto; background: #f8f9fa;">
+            @foreach (var msg in Chat.Messages)
+            {
+                <div class="alert @msg.GetStyle() mb-3 shadow-sm" style="width: fit-content; min-width: 280px; max-width: 85%;">
+                    <div class="d-flex justify-content-between mb-1 small text-muted">
+                        <span>@msg.GetIcon() @msg.GetType().Name.Replace("Message", "")</span>
+                        <span>@msg.Timestamp.ToString("HH:mm:ss")</span>
+                    </div>
+
+                    @if (msg is VideoMessage video)
+                    {
+                        <video controls style="max-height: 250px; width: auto; border-radius: 8px;" class="mt-2 shadow-sm">
+                            <source src="@video.FileUrl" type="video/mp4">
+                            Ваш браузер не поддерживает видео.
+                        </video>
+                    }
+                    else if (msg is VoiceMessage voice)
+                    {
+                        <audio controls style="width: 400px;" class="mt-2">
+                            <source src="@voice.FileUrl" type="audio/mpeg">
+                        </audio>
+                    }
+                    else if (msg is ImageMessage image)
+                    {
+                        <div class="mt-2">
+                            <img src="@image.FileUrl" style="max-height: 250px; width: auto; border-radius: 8px;" class="shadow-sm" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="mt-1" style="word-wrap: break-word; font-size: 1.1rem;">@msg.Content</div>
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="card-footer bg-light border-top-0">
+            <div class="row g-2 mb-3">
+                <div class="col-auto">
+                    <label class="btn btn-outline-warning btn-sm">🖼️ Фото <InputFile OnChange="@(e => OnFileSelected(e, "img"))" style="display:none;" /></label>
+                </div>
+                <div class="col-auto">
+                    <label class="btn btn-outline-success btn-sm">🎤 Аудио <InputFile OnChange="@(e => OnFileSelected(e, "snd"))" style="display:none;" /></label>
+                </div>
+                <div class="col-auto">
+                    <label class="btn btn-outline-danger btn-sm">📹 Видео <InputFile OnChange="@(e => OnFileSelected(e, "vid"))" style="display:none;" /></label>
+                </div>
+                @if (selectedFile != null) {
+                    <div class="col-auto"><span class="badge bg-secondary">Выбран: @selectedFile.Name</span></div>
+                }
+            </div>
+            
+            <div class="input-group">
+                <input @bind="userInput" class="form-control" placeholder="Сообщение..." />
+                
+                @if (fileType == "vid") { <button @onclick='() => SendFile(new VideoCreator())' class="btn btn-danger">Отправить Видео</button> }
+                else if (fileType == "img") { <button @onclick='() => SendFile(new ImageCreator())' class="btn btn-warning">Отправить Фото</button> }
+                else if (fileType == "snd") { <button @onclick='() => SendFile(new VoiceCreator())' class="btn btn-success">Отправить Аудио</button> }
+                else { <button @onclick='() => SendText()' class="btn btn-primary">Отправить</button> }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string userInput = "";
+    private IBrowserFile? selectedFile;
+    private string fileType = "";
+
+    private void OnFileSelected(InputFileChangeEventArgs e, string type) {
+        selectedFile = e.File;
+        fileType = type;
+    }
+
+    private void SendText() {
+        if (string.IsNullOrWhiteSpace(userInput)) return;
+        Chat.AddMessage(new TextCreator().HandleMessage(userInput));
+        userInput = "";
+    }
+
+    private async Task SendFile(MessageCreator creator) {
+        if (selectedFile == null) return;
+
+        try {
+            // 1. Создаем папку uploads, если её нет
+            var uploadPath = Path.Combine(Env.WebRootPath, "uploads");
+            if (!Directory.Exists(uploadPath)) Directory.CreateDirectory(uploadPath);
+
+            // 2. Генерируем имя файла
+            var extension = Path.GetExtension(selectedFile.Name);
+            var fileName = $"{Guid.NewGuid()}{extension}";
+            var fullPath = Path.Combine(uploadPath, fileName);
+
+            // 3. Сохраняем файл на диск Mac
+            // Увеличиваем лимит до 100МБ для видео
+            using var stream = selectedFile.OpenReadStream(100 * 1024 * 1024); 
+            using var fs = File.Create(fullPath);
+            await stream.CopyToAsync(fs);
+
+            // 4. Используем паттерн "Фабричный метод"
+            var msg = creator.HandleMessage(selectedFile.Name);
+            msg.FileUrl = $"/uploads/{fileName}"; // Путь, который поймет браузер
+
+            Chat.AddMessage(msg);
+        }
+        catch (Exception ex) {
+            Console.WriteLine($"Ошибка загрузки: {ex.Message}");
+        }
+        finally {
+            selectedFile = null;
+            fileType = "";
+        }
+    }
+}
