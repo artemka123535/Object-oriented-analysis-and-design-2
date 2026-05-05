@@ -5,73 +5,172 @@ import java.awt.*;
 import java.util.List;
 
 public class TournamentGui extends JFrame {
-
-    private PlayerRepository repository;
-    private JTable table;
-    private DefaultTableModel tableModel;
+    private final PlayerRepository repository;
+    private JTable playerTable;
+    private DefaultTableModel playerModel;
+    private JTable matchTable;
+    private DefaultTableModel matchModel;
 
     public TournamentGui(PlayerRepository repo) {
         this.repository = repo;
 
-        setTitle("Киберспортивный Турнир (Без паттерна)");
+        setTitle("Управление турниром TSU (БЕЗ ПАТТЕРНА)");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(700, 500);
+        setSize(900, 600);
         setLocationRelativeTo(null);
-        setLayout(new BorderLayout());
 
-        JLabel header = new JLabel("Таблица лидеров", JLabel.CENTER);
-        header.setFont(new Font("Arial", Font.BOLD, 22));
-        header.setBorder(BorderFactory.createEmptyBorder(15, 0, 15, 0));
-        add(header, BorderLayout.NORTH);
+        JTabbedPane tabs = new JTabbedPane();
+        tabs.addTab("Игроки", createPlayerPanel());
+        tabs.addTab("Матчи", createMatchPanel());
+        add(tabs);
 
-        String[] columns = {"Никнейм", "Коэффициент K/D"};
-        tableModel = new DefaultTableModel(columns, 0) {
-            @Override public boolean isCellEditable(int r, int c) { return false; }
-        };
-        table = new JTable(tableModel);
-        table.setRowHeight(25);
-        add(new JScrollPane(table), BorderLayout.CENTER);
-
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 15));
-        JButton btnAdd = new JButton("Добавить игрока");
-        JButton btnClear = new JButton("Очистить базу");
-        JButton btnRefresh = new JButton("Обновить данные");
-
-        btnAdd.addActionListener(e -> addSamplePlayer());
-        btnClear.addActionListener(e -> clearData());
-        btnRefresh.addActionListener(e -> updateTable());
-
-        buttonPanel.add(btnAdd); buttonPanel.add(btnClear); buttonPanel.add(btnRefresh);
-        add(buttonPanel, BorderLayout.SOUTH);
-
-        updateTable();
+        updatePlayerTable(null);
     }
 
-    private void updateTable() {
-        tableModel.setRowCount(0);
-        
-        List<PlayerEntity> players = repository.getAllPlayers();
+
+    private void updatePlayerTable(String filter) {
+        playerModel.setRowCount(0);
+        List<PlayerEntity> players = (filter == null || filter.isEmpty()) 
+            ? repository.searchPlayers(filter) 
+            : repository.searchPlayers(filter);
 
         for (PlayerEntity p : players) {
-            Object[] row = { p.getNickname(), p.getKdForDisplay() };
-            tableModel.addRow(row);
+            List<MatchEntity> matches = repository.getMatchesByPlayer(p.getId());
+            double kd = p.calculateOverallKd(matches); 
+            
+            playerModel.addRow(new Object[]{p.getId(), p.getNickname(), p.getTeam(), kd});
         }
     }
 
-    private void addSamplePlayer() {
-        repository.save(new PlayerEntity(null, "NoPattern_Noobik", (int)(Math.random()*10), (int)(Math.random()*50)+1));
-        updateTable();
+    private void updateMatchTable() {
+        int row = playerTable.getSelectedRow();
+        if (row == -1) return;
+        long playerId = (long) playerTable.getValueAt(row, 0);
+        
+        matchModel.setRowCount(0);
+        List<MatchEntity> matches = repository.getMatchesByPlayer(playerId);
+        
+        for (MatchEntity m : matches) {
+            double matchKd = m.getDeaths() == 0 ? m.getKills() : (double) m.getKills() / m.getDeaths();
+            matchKd = Math.round(matchKd * 100.0) / 100.0;
+
+            matchModel.addRow(new Object[]{m.getDate(), m.getKills(), m.getDeaths(), matchKd});
+        }
     }
 
-    private void clearData() {
-        repository.delete();
-        updateTable();
-    }
 
     public static void start(PlayerRepository repo) {
         EventQueue.invokeLater(() -> {
             FlatLightLaf.setup();
             new TournamentGui(repo).setVisible(true);
         });
+    }
+    
+    private JPanel createMatchPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        matchModel = new DefaultTableModel(new String[]{"Дата", "Убийства", "Смерти", "K/D в матче"}, 0);
+        matchTable = new JTable(matchModel);
+        
+        JButton viewMatchesBtn = new JButton("Посмотреть матчи выбранного игрока");
+        JButton addMatchBtn = new JButton("Добавить матч игроку");
+        
+        JPanel toolbar = new JPanel();
+        toolbar.add(viewMatchesBtn);
+        toolbar.add(addMatchBtn);
+
+        panel.add(toolbar, BorderLayout.NORTH);
+        panel.add(new JScrollPane(matchTable), BorderLayout.CENTER);
+
+        viewMatchesBtn.addActionListener(e -> updateMatchTable());
+        addMatchBtn.addActionListener(e -> showAddMatchDialog());
+
+        return panel;
+    }
+
+    private JPanel createPlayerPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+
+        JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JTextField searchField = new JTextField(15);
+        JButton searchBtn = new JButton("Поиск");
+        JButton addBtn = new JButton("Добавить игрока");
+        JButton editBtn = new JButton("Редактировать");
+        JButton deleteBtn = new JButton("Удалить");
+
+        toolbar.add(new JLabel("Никнейм:"));
+        toolbar.add(searchField);
+        toolbar.add(searchBtn);
+        toolbar.add(new JSeparator(SwingConstants.VERTICAL));
+        toolbar.add(addBtn);
+        toolbar.add(editBtn);
+        toolbar.add(deleteBtn);
+
+        playerModel = new DefaultTableModel(new String[]{"ID", "Ник", "Команда", "Общий K/D"}, 0);
+        playerTable = new JTable(playerModel);
+        panel.add(toolbar, BorderLayout.NORTH);
+        panel.add(new JScrollPane(playerTable), BorderLayout.CENTER);
+
+        searchBtn.addActionListener(e -> updatePlayerTable(searchField.getText()));
+        addBtn.addActionListener(e -> showAddPlayerDialog());
+        deleteBtn.addActionListener(e -> deleteSelectedPlayer());
+        editBtn.addActionListener(e -> showEditPlayerDialog());
+
+        return panel;
+    }
+
+    private void showEditPlayerDialog() {
+        int row = playerTable.getSelectedRow();
+        if (row == -1) return;
+        long id = (long) playerTable.getValueAt(row, 0);
+        String currentNick = (String) playerTable.getValueAt(row, 1);
+        String currentTeam = (String) playerTable.getValueAt(row, 2);
+
+        JTextField nickField = new JTextField(currentNick);
+        JTextField teamField = new JTextField(currentTeam);
+        Object[] message = {"Никнейм:", nickField, "Команда:", teamField};
+
+        int option = JOptionPane.showConfirmDialog(null, message, "Редактировать", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            repository.updatePlayer(id, nickField.getText(), teamField.getText());
+            updatePlayerTable(null);
+        }
+    }
+
+     private void showAddPlayerDialog() {
+        JTextField nick = new JTextField();
+        JTextField team = new JTextField();
+        Object[] message = {"Никнейм:", nick, "Команда:", team};
+
+        int option = JOptionPane.showConfirmDialog(null, message, "Новый игрок", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            repository.savePlayer(nick.getText(), team.getText());
+            updatePlayerTable(null);
+        }
+    }
+
+    private void deleteSelectedPlayer() {
+        int row = playerTable.getSelectedRow();
+        if (row != -1) {
+            long id = (long) playerTable.getValueAt(row, 0);
+            repository.deletePlayer(id);
+            updatePlayerTable(null);
+        }
+    }
+
+     private void showAddMatchDialog() {
+        int row = playerTable.getSelectedRow();
+        if (row == -1) return;
+        long playerId = (long) playerTable.getValueAt(row, 0);
+
+        JTextField k = new JTextField();
+        JTextField d = new JTextField();
+        JTextField date = new JTextField("2026-04-27");
+        Object[] message = {"Убийства:", k, "Смерти:", d, "Дата:", date};
+
+        if (JOptionPane.showConfirmDialog(null, message, "Добавить матч", JOptionPane.OK_OPTION) == JOptionPane.OK_OPTION) {
+            repository.saveMatch(playerId, Integer.parseInt(k.getText()), Integer.parseInt(d.getText()), date.getText());
+            updatePlayerTable(null);
+            updateMatchTable();
+        }
     }
 }

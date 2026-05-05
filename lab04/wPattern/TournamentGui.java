@@ -49,8 +49,7 @@ public class TournamentGui extends JFrame {
 
     private JPanel createPlayerPanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        
-        // Панель инструментов (Поиск, Добавление)
+
         JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JTextField searchField = new JTextField(15);
         JButton searchBtn = new JButton("Поиск");
@@ -66,13 +65,11 @@ public class TournamentGui extends JFrame {
         toolbar.add(editBtn);
         toolbar.add(deleteBtn);
 
-        // Таблица
         playerModel = new DefaultTableModel(new String[]{"ID", "Ник", "Команда", "Общий K/D"}, 0);
         playerTable = new JTable(playerModel);
         panel.add(toolbar, BorderLayout.NORTH);
         panel.add(new JScrollPane(playerTable), BorderLayout.CENTER);
 
-        // Слушатели
         searchBtn.addActionListener(e -> updatePlayerTable(searchField.getText()));
         addBtn.addActionListener(e -> showAddPlayerDialog());
         deleteBtn.addActionListener(e -> deleteSelectedPlayer());
@@ -101,8 +98,6 @@ public class TournamentGui extends JFrame {
 
         return panel;
     }
-
-    // --- Логика CRUD ---
 
     private void updatePlayerTable(String filter) {
         playerModel.setRowCount(0);
